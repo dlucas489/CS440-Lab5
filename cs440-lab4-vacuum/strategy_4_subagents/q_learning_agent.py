@@ -26,13 +26,12 @@ def gemini_hyperparameter_subagent(current_step, current_eps):
         match = re.search(r"0\.\d+", response.text)
         return float(match.group()) if match else current_eps
     except Exception:
-        # Fallback if the API times out
+        # Fallback if API times out
         return round(max(0.1, current_eps - 0.05), 2)
 
 def run_q_learning_traversal():
     global epsilon
 
-    # Define the agent OUTSIDE the loop so its memory (q_table) persists
     class QAgent(Agent):
         def __init__(self):
             super().__init__(program=lambda percept: None)
@@ -56,10 +55,9 @@ def run_q_learning_traversal():
         while agent.alive and step < 50:
             percept = env.percept(agent)
 
-            # Sub-agent Delegation
             if step > 0 and step % 5 == 0 and epsilon > 0.1:
                 epsilon = gemini_hyperparameter_subagent(step, epsilon)
-                if episode == 100: # Only print during the final demo run
+                if episode == 100: 
                     print(f"-- Sub-agent updated Epsilon to: {epsilon:.2f} --")
 
             current_state = agent.location
