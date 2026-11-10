@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/context-switcher.sh\"",
+        "timeout": 10,
+        "description": "Dynamically load relevant context based on branch and user query"
+      }
+    ]
+  }
+}
