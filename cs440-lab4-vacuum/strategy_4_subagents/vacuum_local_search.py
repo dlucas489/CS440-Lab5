@@ -35,7 +35,7 @@ ANNEALING_LAYOUT = [
 ]
 
 MDP_LAYOUT = [
-    [0, 0, 0, "start"],
+    ["start", 0, 0, 0],
     [0, "X", 0, 0],
     [0, 0, 0, 0],
     [0, -1, 0, 10],
@@ -68,9 +68,9 @@ class AnnealingEvent:
 
 
 class DirtGridEnvironment(Environment):
-
     def __init__(self, layout: Sequence[Sequence[int | str]]):
         super().__init__()
+        self.layout = layout 
         self.dirt, self.start = _parse_layout(layout)
         self.path_log: list[PathEntry] = []
 
@@ -122,7 +122,10 @@ class DirtGridEnvironment(Environment):
 
     def _in_bounds(self, location: Location) -> bool:
         x, y = location
-        return 0 <= y < len(self.dirt) and 0 <= x < len(self.dirt[y])
+        in_grid = 0 <= y < len(self.dirt) and 0 <= x < len(self.dirt[y])
+        if not in_grid:
+            return False
+        return self.layout[y][x] != "X"
 
 def HillClimbingVacuumProgram():
 
@@ -206,8 +209,10 @@ def _parse_layout(layout):
             if token == START_TOKEN:
                 start = (x, y)
                 parsed.append(MIN_DIRT)
-            elif isinstance(token, int) and MIN_DIRT <= token <= MAX_DIRT:
+            elif isinstance(token, int):  # Removed strict MIN/MAX check to allow -1 reward
                 parsed.append(token)
+            elif token == "X":
+                parsed.append(MIN_DIRT) # Treat walls as 0 internally for parsing bounds
             else:
                 raise ValueError(f"Invalid cell. {(x, y)}: {token!r}")
         dirt.append(tuple(parsed))
